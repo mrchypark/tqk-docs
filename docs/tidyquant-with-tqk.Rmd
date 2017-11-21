@@ -6,6 +6,8 @@ output:
   rmarkdown::html_vignette:
     toc: true
     toc_depth: 2
+    includes:
+      in_header: google_analytics.html
 vignette: >
   %\VignetteIndexEntry{tidyquant with tqk}
   %\VignetteEngine{knitr::rmarkdown}
