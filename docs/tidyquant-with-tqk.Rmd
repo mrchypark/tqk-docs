@@ -32,16 +32,7 @@ knitr::opts_chunk$set(message = FALSE,
 
 `tidyquant`의 `tq_get()`으로 한국의 데이터를 가져오는데 제약이 있어 시작했습니다. 우선 `code_get()`으로 종목 코드를 가져오고, `tqk_get()`으로 `tq_get()`과 같은 양식의 데이터를 확보하여 이후 `tidyquant`의 모든 기능을 한국 데이터로 활용할 수 있습니다.
 
-# 사전준비
-
-`tidyquant`와 `tqk` 패키지를 불러옵니다.
-
-```{r}
-library(tidyquant)
-library(tqk)
-```
-
-# 주식 데이터를 tidy 개념으로 tidyquant
+# tidyquant 소개 - 주식 데이터를 tidy하게
 
 `tidyquant`는 `quantmod` 등 주식 분석을 주 목적으로 하는 중요 함수를 제공하는 중요한 패키지입니다. `tidy data` 개념을 활용한 데이터 핸들링, `ggplot`과 연계된 강한 차트 그리기, 야후를 기본으로 구글 및 각자 독자적인 데이터 소스로 부터 필요한 데이터를 손쉽게 가져오는 기능, 성능 분석 함수들을 제공하고 있습니다.
 
@@ -62,35 +53,32 @@ tq_get("^KS11")
 tq_get("^KOSDAQ")
 ```
 
-각 기업의 주가를 가져오려면 종목 번호를 알고 있어야 합니다. 양식은 `종목 번호.KS`입니다. 종목번호는 세종기업 데이터에서 가져온 정보를 활용하겠습니다.
+각 기업의 주가를 가져오려면 종목 번호를 알고 있어야 합니다. 양식은 `종목번호.KS`입니다. 종목번호는 [전자공시시스템](http://dart.fss.or.kr/)에서 사용하는 번호입니다.
+
+<img src = "https://user-images.githubusercontent.com/6179259/46579905-19484e00-ca55-11e8-8385-284cda1e4576.png" width = 100%>
+
+삼성전자 번호는 **005930** 이군요!
 
 ```{r}
-library(readr)
-url<-"https://github.com/mrchypark/sejongFinData/raw/master/codeData.csv"
-download.file(url,destfile = "./codeData.csv")
-codeData<-read_csv("./codeData.csv")
-head(codeData)
-```
-
-삼성전자를 가져와 볼까요.
-```{r}
-tar<-paste0(codeData[grep("^삼성전자$",codeData$`종목명`),1],".KS")
-tq_get(tar)
+ss <- tq_get("005930.KS")
+ss
 ```
 
 날짜를 지정할 수도 있습니다.
 ```{r}
-tq_get(tar, from="2016-01-01", to="2016-05-05")
-
+ssdate <- tq_get("005930.KS", from="2016-01-01", to="2016-05-05")
+ssdate
 ```
 
 배당금 정보는 `dividends` 에서 확인하시면 됩니다.
 ```{r}
-tq_get(tar, get = "dividends")
-
+ssdiv <- tq_get("005930.KS", get = "dividends")
+ssdiv
 ```
 
-`야후 파이넨스`가 데이터 소스이다 보니 모든 정보가 있다고 보기 어렵니다. 그것을 커버하기 위해서 `tqk`가 시작됬습니다.
+`야후 파이넨스`가 데이터 소스이다 보니 모든 정보가 있다고 보기 어렵니다. 거기다 종목 번호를 일일이 찾는 것도 힘들구요. 이런 문제를 해결하기 위해서 `tqk`가 시작됬습니다.
+
+# tqk 소개 - 한국 주식 데이터 패키지
 
 ## 종목 코드 가져오기
 
@@ -107,8 +95,12 @@ code
 `tqk_get()`은 종목 코드로 데이터를 가져오도록 만들었습니다. 
 
 ```{r}
-ss_prices  <- tqk_get(code[grep("삼성전자", code[,2]),1]
-                       , from="2017-01-01")
+ss_prices <- 
+  code_get() %>% 
+  filter(grepl("^삼성전자$",name)) %>% 
+  select(code) %>% 
+  tqk_get(from = "2017-01-01")
+
 ss_prices
 ```
 
